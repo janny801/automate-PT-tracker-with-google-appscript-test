@@ -49,4 +49,4 @@ This script automates tracking and updating membership points for users based on
 
 
 ## Other Notes
-**may have to rename if the sheet you want to put the data onto is not called 'main'** 
+**May have to make small tweak to code if the sheet you want to put the data onto (from the Google Form output) is not called 'main'** 
