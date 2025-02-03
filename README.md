@@ -33,18 +33,11 @@ This script automates tracking and updating membership points for users based on
     **This is the name of the sheet for the corresponding Google Form** 
    - `eventName`: The name of the event (used to track attendance).
         **This is what is shown up on the 'main' Google Sheet** 
-5. **set up a trigger on google appscript**
-    a. Go Into Trigger
-    b. Add Trigger
-        > Should Say
-            - onFormSubmit(or function name if you rename)
-            - Head
-            - From form
-            - on form submit
+5. **Set up a trigger on Google Appscript**
+    - a. Go Into Trigger
+    - b. Add Trigger
+    - See image below for how it should look
 ![How Triggers Should Look](images/howtriggershouldlook.png)
-
-
-
 
 
 
