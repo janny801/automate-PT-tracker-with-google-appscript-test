@@ -25,7 +25,7 @@ This script automates tracking and updating membership points for users based on
 1. **Create a Google Form** for an event.
 2. **Link the Form to a Google Sheet** (Responses are automatically recorded).
 ![Link Event for Each Google Form](images/linkeventforeachgoogleform.png)
-    **Keep track of the name of the sheet (created when linking from Google Form) -- You are able to change, but make sure to change the variable in the code as well**
+    - **Make sure to keep track of the name of the sheet (created when linking from Google Form) -- You are able to change, but make sure to change the variable in the code as well**
 3. **Copy and paste the script** into the Google Apps Script Editor.
 4. **Modify the following variables in the script**:
 ![After Linking Google Form with Google Sheet, Use the Name of the tab you have Created](images/afterlinkusethisname.png)
