@@ -30,6 +30,7 @@ This script automates tracking and updating membership points for users based on
 4. **Modify the following variables in the script**:
 ![After Linking Google Form with Google Sheet, Use the Name of the tab you have Created](images/afterlinkusethisname.png)
    - `sourceSheet`: The name of the sheet containing form responses.
+      - In the case of the given code 'sourceSheet' is set to "eventa"
     **This is the name of the sheet for the corresponding Google Form** 
    - `eventName`: The name of the event (used to track attendance).
         **This is what is shown up on the 'main' Google Sheet** 
