@@ -1,6 +1,6 @@
 # Google Sheets Membership Points Tracker
 
-This script automates tracking and updating membership points for users based on Google Form submissions. It retrieves form data, updates the main tracking sheet, and ensures duplicate entries do not add extra points. Additionally, a car ride feature can be added for bonus points.
+This script automates tracking and updating membership points for users based on Google Form submissions. It retrieves form data, updates the main tracking sheet, and ensures duplicate entries do not add extra points. 
 
 ## Features
 
