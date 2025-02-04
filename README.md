@@ -1,6 +1,6 @@
 # Google Sheets Membership Points Tracker
 
-This script automates tracking and updating membership points for users based on Google Form submissions. It retrieves form data, updates the main tracking sheet, and ensures duplicate entries do not add extra points. 
+This project is an automated solution for tracking and updating membership points for users based on Google Form submissions. It is designed to manage multiple Google Forms linked to a single Google Sheet and consolidate the responses into a centralized main tracking sheet. The script ensures accurate point tracking, avoids duplicate entries, and allows for dynamic updates to membership statuses.
 
 ## Features
 
