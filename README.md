@@ -43,4 +43,6 @@ This project is an automated solution for tracking and updating membership point
 
 
 ## Other Notes
-**May have to make small tweak to code if the sheet you want to put the data onto (from the Google Form output) is not called 'main'** 
+- May have to make a small tweak to the code if the sheet you want to put the data onto (from the Google Form output) is not called main.
+- The script is currently designed to accommodate the basic Google Form structure provided, which retrieves the name, email, and membership status of each member and consolidates this information into the main sheet.
+- Additional coding may be required to handle more complex forms or additional data fields not included in the current setup.
