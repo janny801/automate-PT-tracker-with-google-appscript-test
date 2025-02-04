@@ -27,7 +27,7 @@ This project is an automated solution for tracking and updating membership point
 ![Link Event for Each Google Form](images/linkeventforeachgoogleform.png)
     - **Make sure to keep track of the name of the sheet (created when linking from Google Form) -- You are able to change, but make sure to change the variable in the code as well**
 3. **Copy and paste the script** into the Google Apps Script Editor.
-4. **Modify the following variables in the script**:
+4. **Modify the following variables in the Google App Scripts Editor for each linked Google Form**:
 ![After Linking Google Form with Google Sheet, Use the Name of the tab you have Created](images/afterlinkusethisname.png)
    - `sourceSheet`: The name of the sheet containing form responses.
       - In the case of the given code 'sourceSheet' is set to "eventa"
