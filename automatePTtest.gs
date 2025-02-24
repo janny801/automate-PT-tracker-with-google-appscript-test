@@ -1,4 +1,5 @@
 
+
 //copy paste this code into google appscript for each form 
 //see readme for more instructions
 
@@ -13,11 +14,11 @@ function onFormSubmit(e) {
 
 
  // Change these two variables each form 
-  var sourceSheetName = "eventa"; // The sheet name (when linking will be named to "form response x", rename it if you want and put that sheet name here)
-  var eventName = "Event A"; // What will display on the main sheet
+  var sourceSheetName = "eventc"; // The sheet name (when linking will be named to "form response x", rename it if you want and put that sheet name here)
+  var eventName = "Event C"; // What will display on the main sheet
   // Change two above variables
 
-
+  var pointsForThisEvent = 20; // points that u want to add for this event 
 
 
   var targetSheetName = "main";
@@ -102,7 +103,7 @@ function onFormSubmit(e) {
 
         // Increment points
         var points = data[i][3] || 0; // Default points to 0 if empty
-        targetSheet.getRange(i + 1, 4).setValue(points + 10);
+        targetSheet.getRange(i + 1, 4).setValue(points + pointsForThisEvent);
       } else {
         Logger.log("No additional points awarded: Event already attended.");
       }
@@ -117,7 +118,7 @@ function onFormSubmit(e) {
     var emptyRow = targetSheet.getLastRow() + 1;
     targetSheet
       .getRange(emptyRow, 1, 1, 5)
-      .setValues([[name, initialStatus, email, 10, eventName]]);
+      .setValues([[name, initialStatus, email, pointsForThisEvent, eventName]]);
   }
 
   // Resize all columns to fit their content dynamically
