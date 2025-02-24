@@ -5,16 +5,23 @@ function onFormSubmit(e) {
   // Open the spreadsheet
   var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
 
-  // Change these two variables per form
-  var sourceSheetName = "eventc"; // The sheet name (rename accordingly)
+//==========================================================================================================================================================================================
+// THE FOLLOWING IS ALL YOU NEED TO TOUCH, DONT TOUCH ANYTHING ELSE!!!! IF YOU HAVE PROBLEMS ASK INTERNS: JANRED OR MUHAMMAD
+//==========================================================================================================================================================================================
 
+  // CHANGE THE sourceSheetName PER EVENT
+  var sourceSheetName = "eventc"; // The sheet name (when linking from individual google form new tab will be created called something "form response x"by default. 
+  //rename that tab, and put that name here ) 
+
+  // ONLY CHANGE THIS IF YOU RENAME THE SHEET THAT THE MEMBER INFO GET COLLECTED AT
+  var targetSheetName = "Member Overview"; //This is where all the member info gets collected, i.e the final spot for everything
+
+  //CHANGE THE pointsForThisEvent PER EVENT
   var pointsForThisEvent = 20; // Points to add for this event
 
+//==========================================================================================================================================================================================
 
-  
-  var targetSheetName = "main";
-
-  // Open the source sheet
+  // Open the source and target sheets
   var sourceSheet = spreadsheet.getSheetByName(sourceSheetName);
   var targetSheet = spreadsheet.getSheetByName(targetSheetName);
 
@@ -40,6 +47,7 @@ function onFormSubmit(e) {
   var data = targetSheet.getDataRange().getValues();
   var headers = data[0]; // Get headers (first row)
   var nameColumnIndex = 0; // Name column is A (index 0)
+  var pointsColumnIndex = 3; // Points column is D (index 3)
   var eventColumnIndex = headers.indexOf(sourceSheetName);
 
   // If the event does not exist in the header row, add it as a new column
@@ -71,17 +79,22 @@ function onFormSubmit(e) {
         targetSheet.getRange(i + 1, 3).setValue(existingEmails.join(", "));
       }
 
-      // Assign event points to the specific event column
-      var existingPoints = data[i][eventColumnIndex] || 0;
-      if (existingPoints === 0) {
+      // Check if the user has already attended this event
+      var existingPointsForEvent = data[i][eventColumnIndex] || 0;
+      if (existingPointsForEvent === 0) {
+        // Add points for the event
         targetSheet.getRange(i + 1, eventColumnIndex + 1).setValue(pointsForThisEvent);
       } else {
         Logger.log("No additional points awarded: Event already recorded.");
       }
 
-      // Update total points in column 4
-      var totalPoints = (data[i][3] || 0) + pointsForThisEvent;
-      targetSheet.getRange(i + 1, 4).setValue(totalPoints);
+      // **Fix: Properly Recalculate Total Points**
+      var totalPoints = 0;
+      for (var j = 4; j < headers.length; j++) { // Start checking from event columns
+        totalPoints += data[i][j] || 0;
+      }
+      targetSheet.getRange(i + 1, pointsColumnIndex + 1).setValue(totalPoints);
+
       break;
     }
   }
@@ -98,11 +111,6 @@ function onFormSubmit(e) {
   for (var col = 1; col <= totalColumns; col++) {
     targetSheet.autoResizeColumn(col);
   }
-
-  Logger.log("Form response processed and added to 'main'.");
-}
-
-
 
   Logger.log("Form response processed and added to 'main'.");
 }
