@@ -9,7 +9,7 @@ This project is an automated solution for tracking and updating membership point
 - **New User Handling**: Adds a new row if a user is not already listed.
 - **Duplicate Prevention**: Ensures multiple submissions for the same event do not give extra points.
 - **Name Normalization**: Converts names to lowercase and trims whitespace for consistency.
-- **Points Via ID**: Handles the points via ID so that name dupes between users doesn't cause errors. 
+- **Points Via ID**: Handles the points via ID so that name dupes between users doesn't cause errors.
 
 ## How It Works
 
@@ -21,48 +21,40 @@ This project is an automated solution for tracking and updating membership point
 4. Name standardization prevents case-sensitive duplicates.
 5. A separate script may be needed to track users’ event attendance over time.
 
-
 ## Initial Setup
 
 1. **Create a Google Spreadsheet**
 2. **Link Google Spreadsheet to google scripts**
-![Link Google Spreadsheet to google scripts](images/linkgooglesheettoscript.png)
+   ![Link Google Spreadsheet to google scripts](images/linkgooglesheettoscript.png)
 3. **Copy and paste the script** into the Google Apps Script Editor.
 4. **Modify the following variables**:
-    - spreadsheetId: change this to YOUR google spreadsheet ID, it can be found in the URL. (image below for reference)
-    ![where to find a spread sheet's unique id](images/uniquespreadsheetid.png)
-    - targetSheetName: this should be changed to the name of your main 'subsheet' or 'tab' in which all member data will get funneled to. (image below for reference)
-    ![main subsheet example](images/mainSubSheet.png)
-5. **Set up a trigger on Google Appscript**
-    - a. Go Into Trigger
-    - b. Add Trigger
-    - See image below for how it should look
-![How Triggers Should Look](images/howtriggershouldlook.png)
-
+   - spreadsheetId: change this to YOUR google spreadsheet ID, it can be found in the URL. (image below for reference)
+     ![where to find a spread sheet's unique id](images/uniquespreadsheetid.png)
+   - targetSheetName: this should be changed to the name of your main 'subsheet' or 'tab' in which all member data will get funneled to. (image below for reference)
+     ![main subsheet example](images/mainSubSheet.png)
+5. **Set up a trigger on Google Appscript** - a. Go Into Trigger - b. Add Trigger - See image below for how it should look
+   ![How Triggers Should Look](images/howtriggershouldlook.png)
 
 ## Adding 'Events'
 
-1. **Create a Google Form** for an event. 
-2. **Link the Form to the Google Sheet Created in 'Initial Setup'** (Responses are automatically recorded).
-![Link Event for Each Google Form](images/linkeventforeachgoogleform.png)
-    - **Make sure to keep track of the name of the sheet (created when linking from Google Form) -- You are able to change, but make sure to change the variable in the code as well**
-3. **Copy and paste the script** into the Google Apps Script Editor.
-4. **Modify the following variables in the Google App Scripts Editor for each linked Google Form**:
-![After Linking Google Form with Google Sheet, Use the Name of the tab you have Created](images/afterlinkusethisname.png)
-   - `sourceSheet`: The name of the sheet containing form responses.
-      - In the case of the given code 'sourceSheet' is set to "eventa"
-    **This is the name of the sheet for the corresponding Google Form** 
-   - `eventName`: The name of the event (used to track attendance).
-        **This is what is shown up on the 'main' Google Sheet** 
-5. **Set up a trigger on Google Appscript**
-    - a. Go Into Trigger
-    - b. Add Trigger
-    - See image below for how it should look
-![How Triggers Should Look](images/howtriggershouldlook.png)
+1. **Create a Google Form** for an event. The form MUST include the following variables in EXACT ORDER BELOW - 1) First Name - 2) Last Name - 3) Email - 4) ID - See image below for how it should look
+   ![How Event Form Should Look](images/eventFormExample.png)
 
+2. **Link the Form to the Google Sheet Created in 'Initial Setup'** (Responses are automatically recorded to google sheet).
+   ![Link Event for Each Google Form](images/linkeventforeachgoogleform.png) - This will create a subsheet at the bottom of your page with the event name. This name can be changed on the spreadsheet if wanted, but it will also affect the script
+   ![Event on the Spreadsheet](images/eventOnSpreadsheet.png)
+3. **Adjust Event Name in Script**
+   - you must go into the appscript connected to your spreadsheet and change the variable 'sourceSheetName' to EXACTLY how your event name appears at the bottom of your spreadsheet.
+4. **Adjust Point Value for Attending Event**
+   - You must go into the appscript connected to your spreadsheet and change the variable 'pointsForThisEvent' to how many points the event is worth
 
+## Important Takeaways
+
+The following variables should be well tracked: - spreadsheetID - sourceSheetName - targetSheetName - pointForThisEvent
+
+All steps should be well accounted for, as the program is in its beginner stages, certain things could cause the code to not work as desired.
 
 ## Other Notes
-- May have to make a small tweak to the code if the sheet you want to put the data onto (from the Google Form output) is not called main.
+
 - The script is currently designed to accommodate the basic Google Form structure provided, which retrieves the name, email, and membership status of each member and consolidates this information into the main sheet.
 - Additional coding may be required to handle more complex forms or additional data fields not included in the current setup.
