@@ -32,8 +32,11 @@ This project is an automated solution for tracking and updating membership point
      ![where to find a spread sheet's unique id](images/uniquespreadsheetid.png)
    - targetSheetName: this should be changed to the name of your main 'subsheet' or 'tab' in which all member data will get funneled to. (image below for reference)
      ![main subsheet example](images/mainSubSheet.png)
-5. **Set up a trigger on Google Appscript** - a. Go Into Trigger - b. Add Trigger - See image below for how it should look
-   ![How Triggers Should Look](images/howtriggershouldlook.png)
+5. **Set up a trigger on Google Appscript**
+   - a. Go Into Trigger
+   - b. Add Trigger
+   - See image below for how it should look
+     ![How Triggers Should Look](images/howtriggershouldlook.png)
 
 ## Adding 'Events'
 
