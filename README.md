@@ -40,12 +40,18 @@ This project is an automated solution for tracking and updating membership point
 
 ## Adding 'Events'
 
-1. **Create a Google Form** for an event. The form MUST include the following variables in EXACT ORDER BELOW - 1) First Name - 2) Last Name - 3) Email - 4) ID - See image below for how it should look
-   ![How Event Form Should Look](images/eventFormExample.png)
+1. **Create a Google Form** for an event. The form MUST include the following variables in EXACT ORDER BELOW
+
+   - 1. First Name
+   - 2. Last Name
+   - 3. Email
+   - 4. ID - See image below for how it should look
+        ![How Event Form Should Look](images/eventFormExample.png)
 
 2. **Link the Form to the Google Sheet Created in 'Initial Setup'** (Responses are automatically recorded to google sheet).
-   ![Link Event for Each Google Form](images/linkeventforeachgoogleform.png) - This will create a subsheet at the bottom of your page with the event name. This name can be changed on the spreadsheet if wanted, but it will also affect the script
-   ![Event on the Spreadsheet](images/eventOnSpreadsheet.png)
+   ![Link Event for Each Google Form](images/linkeventforeachgoogleform.png)
+   - This will create a subsheet at the bottom of your page with the event name. This name can be changed on the spreadsheet if wanted, but it will also affect the script
+     ![Event on the Spreadsheet](images/eventOnSpreadsheet.png)
 3. **Adjust Event Name in Script**
    - you must go into the appscript connected to your spreadsheet and change the variable 'sourceSheetName' to EXACTLY how your event name appears at the bottom of your spreadsheet.
 4. **Adjust Point Value for Attending Event**
@@ -53,7 +59,12 @@ This project is an automated solution for tracking and updating membership point
 
 ## Important Takeaways
 
-The following variables should be well tracked: - spreadsheetID - sourceSheetName - targetSheetName - pointForThisEvent
+The following variables should be well tracked:
+
+- spreadsheetID
+- sourceSheetName
+- targetSheetName
+- pointForThisEvent
 
 All steps should be well accounted for, as the program is in its beginner stages, certain things could cause the code to not work as desired.
 
