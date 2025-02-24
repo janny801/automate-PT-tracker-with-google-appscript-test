@@ -9,10 +9,11 @@ This project is an automated solution for tracking and updating membership point
 - **New User Handling**: Adds a new row if a user is not already listed.
 - **Duplicate Prevention**: Ensures multiple submissions for the same event do not give extra points.
 - **Name Normalization**: Converts names to lowercase and trims whitespace for consistency.
+- **Points Via ID**: Handles the points via ID so that name dupes between users doesn't cause errors. 
 
 ## How It Works
 
-1. A Google Form is created for each event.
+1. A Google Form is created for each event and linked to a spreadsheet.
 2. The script extracts the latest form response from the Google Sheet.
 3. It checks if the participant is already in the main sheet:
    - If found, their points are incremented.
@@ -20,10 +21,29 @@ This project is an automated solution for tracking and updating membership point
 4. Name standardization prevents case-sensitive duplicates.
 5. A separate script may be needed to track users’ event attendance over time.
 
-## Setup Instructions
 
-1. **Create a Google Form** for an event.
-2. **Link the Form to a Google Sheet** (Responses are automatically recorded).
+## Initial Setup
+
+1. **Create a Google Spreadsheet**
+2. **Link Google Spreadsheet to google scripts**
+![Link Google Spreadsheet to google scripts](images/linkgooglesheettoscript.png)
+3. **Copy and paste the script** into the Google Apps Script Editor.
+4. **Modify the following variables**:
+    - spreadsheetId: change this to YOUR google spreadsheet ID, it can be found in the URL. (image below for reference)
+    ![where to find a spread sheet's unique id](images/uniquespreadsheetid.png)
+    - targetSheetName: this should be changed to the name of your main 'subsheet' or 'tab' in which all member data will get funneled to. (image below for reference)
+    ![main subsheet example](images/mainSubSheet.png)
+5. **Set up a trigger on Google Appscript**
+    - a. Go Into Trigger
+    - b. Add Trigger
+    - See image below for how it should look
+![How Triggers Should Look](images/howtriggershouldlook.png)
+
+
+## Adding 'Events'
+
+1. **Create a Google Form** for an event. 
+2. **Link the Form to the Google Sheet Created in 'Initial Setup'** (Responses are automatically recorded).
 ![Link Event for Each Google Form](images/linkeventforeachgoogleform.png)
     - **Make sure to keep track of the name of the sheet (created when linking from Google Form) -- You are able to change, but make sure to change the variable in the code as well**
 3. **Copy and paste the script** into the Google Apps Script Editor.
