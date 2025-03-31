@@ -10,14 +10,14 @@ function onFormSubmit(e) {
 //==========================================================================================================================================================================================
 
   // CHANGE THE sourceSheetName PER EVENT
-  var sourceSheetName = "eventa"; // The sheet name (when linking from individual google form new tab will be created called something "form response x"by default. 
+  var sourceSheetName = "eventb"; // The sheet name (when linking from individual google form new tab will be created called something "form response x"by default. 
   //rename that tab, and put that name here ) 
 
   // ONLY CHANGE THIS IF YOU RENAME THE SHEET THAT THE MEMBER INFO GET COLLECTED AT
   var targetSheetName = "Member Overview"; //This is where all the member info gets collected, i.e the final spot for everything
 
   //CHANGE THE pointsForThisEvent PER EVENT
-  var pointsForThisEvent = 100; // Points to add for this event
+  var pointsForThisEvent = 10; // Points to add for this event
 
 //==========================================================================================================================================================================================
 
