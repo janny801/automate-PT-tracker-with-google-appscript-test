@@ -3,7 +3,8 @@ var exclusions = [
   "Home",
   "Member Overview",
   "Leaderboard",
-  "Bonus"
+  "Bonus",
+  "main"
 ];
 var officers = [
   "Ny Dang", "Eric Lai", "Melody Nguyen", "Nathan Turan", 
@@ -121,7 +122,7 @@ function onFormSubmit(e) {
 //==========================================================================================================================================================================================
 
   // CHANGE THE sourceSheetName PER EVENT
-  var sourceSheetName = "eventa"; // The sheet name (when linking from individual google form new tab will be created called something "form response x"by default. 
+  var sourceSheetName = "eventb"; // The sheet name (when linking from individual google form new tab will be created called something "form response x"by default. 
   //rename that tab, and put that name here ) 
 
   // ONLY CHANGE THIS IF YOU RENAME THE SHEET THAT THE MEMBER INFO GET COLLECTED AT
