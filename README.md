@@ -49,10 +49,12 @@ This project is an automated solution for tracking and updating membership point
         ![How Event Form Should Look](images/eventFormExample.png)
 
 2. **Link the Form to the Google Sheet Created in 'Initial Setup'** (Responses are automatically recorded to google sheet).
+
    - ![Link Event for Each Google Form](images/linkeventforeachgoogleform.png)
 
    - This will create a subsheet at the bottom of your page with the event name. This name can be changed on the spreadsheet if wanted, but it will also affect the script
      ![Event on the Spreadsheet](images/eventOnSpreadsheet.png)
+
 3. **Adjust Event Name in Script**
    - you must go into the appscript connected to your spreadsheet and change the variable 'sourceSheetName' to EXACTLY how your event name appears at the bottom of your spreadsheet.
 4. **Adjust Point Value for Attending Event**
@@ -70,6 +72,10 @@ The following variables should be well tracked:
 All steps should be well accounted for, as the program is in its beginner stages, certain things could cause the code to not work as desired.
 
 ## Other Notes
+
+- There is a 'dashboard' sheet on the spreadsheet, this is essentially where a summary of all the data is stored. It is useful for analysis of all things related to events and members. On the dashboard there is a graph called 'Event Multipliers'; Under that graph there is a section called 'points'; This section is simply for logging how many points each event is worth and should be input manually as it is just for reference.
+
+  - ![Event on the Spreadsheet](images/dashboard.png)
 
 - The script is currently designed to accommodate the basic Google Form structure provided, which retrieves the name, email, and membership status of each member and consolidates this information into the main sheet.
 - Additional coding may be required to handle more complex forms or additional data fields not included in the current setup.
