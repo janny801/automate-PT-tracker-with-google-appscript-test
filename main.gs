@@ -1,6 +1,6 @@
 function onFormSubmit(e) {
   // The specific spreadsheet ID
-  var spreadsheetId = "13JHcVgKkPVHWy6Kmc7rWoRS0GyI0QL0BEI4qj03DRbE";
+  var spreadsheetId = "1L4qd0V7MeZJN3_hTeFhh_-n5hTcj0Je80W9GDa4j1p4";
 
   // Open the spreadsheet
   var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
@@ -10,7 +10,7 @@ function onFormSubmit(e) {
 //==========================================================================================================================================================================================
 
   // CHANGE THE sourceSheetName PER EVENT
-  var sourceSheetName = "eventb"; // The sheet name (when linking from individual google form new tab will be created called something "form response x"by default. 
+  var sourceSheetName = "eventz"; // The sheet name (when linking from individual google form new tab will be created called something "form response x"by default. 
   //rename that tab, and put that name here ) 
 
   // ONLY CHANGE THIS IF YOU RENAME THE SHEET THAT THE MEMBER INFO GET COLLECTED AT
@@ -145,4 +145,9 @@ function onFormSubmit(e) {
   targetSheet.getDataRange().setHorizontalAlignment("center");
 
   Logger.log("Form response processed and added to 'main'.");
+  
+ createOrUpdateEventMultipliers()
+ createLeaderboard()
+ createOrUpdateDashboard()
 }
+
