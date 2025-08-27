@@ -1,204 +1,326 @@
 function onFormSubmit(e) {
-  // The specific spreadsheet ID
+  var lock = LockService.getPublicLock();
+  
+  try {
+    // Use a reasonable timeout (1 hour max)
+    if (!lock.tryLock(3600000)) {
+      Logger.log('Could not obtain lock after an hour. Form submission skipped.');
+      return;
+    }
+    
+    processFormSubmission(e);
+    
+  } catch (error) {
+    Logger.log('Error: ' + error.toString());
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+function processFormSubmission(e) {
   var spreadsheetId = "1TJ-tA75Dhx2Ti0oWFTuioSOLjbBGxUyYFwfg8FAsaLI";
-
-  // Open the spreadsheet
   var spreadsheet = SpreadsheetApp.openById(spreadsheetId);
+  
+  // Configuration
+  var sourceSheetName = "9/3 Icebreaker Social Sign-In";
+  var targetSheetName = "Member Overview";
+  var pointsForThisEvent = 10;
 
-  //==========================================================================================================================================================================================
-  // THE FOLLOWING IS ALL YOU NEED TO TOUCH, DONT TOUCH ANYTHING ELSE!!!! IF YOU HAVE PROBLEMS ASK INTERNS: JANRED OR MUHAMMAD
-  //==========================================================================================================================================================================================
+  // Extract form data
+  var values = e.values;
+  var firstName = values[1] ? String(values[1]).trim() : "";
+  var lastName = values[2] ? String(values[2]).trim() : "";
+  var email = values[3] ? String(values[3]).trim() : "";
+  var uhID = values[4] ? String(values[4]).trim() : "";
 
-  // CHANGE THE sourceSheetName PER EVENT
-  var sourceSheetName = "9/4 Icebreaker Social Sign-In"; // The sheet name (when linking from individual google form new tab will be created called something "form response x"by default. 
-  //rename that tab, and put that name here ) 
-
-  // ONLY CHANGE THIS IF YOU RENAME THE SHEET THAT THE MEMBER INFO GET COLLECTED AT
-  var targetSheetName = "Member Overview"; //This is where all the member info gets collected, i.e the final spot for everything
-
-  //CHANGE THE pointsForThisEvent PER EVENT
-  var pointsForThisEvent = 10; // Points to add for this event
-
-  //==========================================================================================================================================================================================
-
-  // Open the source and target sheets
-  var sourceSheet = spreadsheet.getSheetByName(sourceSheetName);
-  var targetSheet = spreadsheet.getSheetByName(targetSheetName);
-
-  // If the target sheet doesn't exist, create it
-  if (!targetSheet) {
-    targetSheet = spreadsheet.insertSheet(targetSheetName);
-    Logger.log("Sheet 'Member Overview' created successfully.");
-  }
-
-  // ---------------------- HEADER SETUP (always ensure Paid Status is after UH ID) ----------------------
-  // If empty or missing headers, set them with Paid Status in the correct spot
-  var lastColumn = Math.max(1, targetSheet.getLastColumn());
-  var headers = targetSheet.getRange(1, 1, 1, lastColumn).getValues()[0].filter(String);
-
-  // Desired base headers in order:
-  var desiredBaseHeaders = ["First Name", "Last Name", "Email", "UH ID", "Paid Status", "Total Points"];
-
-  if (headers.length < 6 ||
-      headers[0] !== "First Name" ||
-      headers[1] !== "Last Name" ||
-      headers[2] !== "Email" ||
-      headers[3] !== "UH ID") {
-    // Reset the first 6 headers exactly as desired
-    targetSheet.getRange(1, 1, 1, desiredBaseHeaders.length).setValues([desiredBaseHeaders]);
-    headers = targetSheet.getRange(1, 1, 1, targetSheet.getLastColumn()).getValues()[0];
-  } else {
-    // Ensure "Paid Status" exists AFTER UH ID
-    var paidStatusHeader = "Paid Status";
-    var uhIdIndexZeroBased = headers.indexOf("UH ID"); // should be 3
-    var paidIdx = headers.indexOf(paidStatusHeader);
-    if (paidIdx === -1) {
-      // Insert a new column after UH ID (1-based index)
-      targetSheet.insertColumnAfter(uhIdIndexZeroBased + 1);
-      targetSheet.getRange(1, uhIdIndexZeroBased + 2).setValue(paidStatusHeader)
-                 .setFontWeight("bold").setBackground("#f1f3f4");
-    } else if (paidIdx !== uhIdIndexZeroBased + 1) {
-      // If Paid Status exists but is in the wrong place, move it next to UH ID
-      var fromCol = paidIdx + 1;                      // 1-based
-      var toCol = uhIdIndexZeroBased + 2;             // 1-based, right after UH ID
-      targetSheet.moveColumns(targetSheet.getRange(1, fromCol, 1, 1), toCol);
-    }
-    // Ensure "Total Points" exists (append if missing)
-    headers = targetSheet.getRange(1, 1, 1, targetSheet.getLastColumn()).getValues()[0];
-    if (headers.indexOf("Total Points") === -1) {
-      var newCol = headers.length + 1;
-      targetSheet.getRange(1, newCol).setValue("Total Points").setFontWeight("bold").setBackground("#f1f3f4");
-    }
-    headers = targetSheet.getRange(1, 1, 1, targetSheet.getLastColumn()).getValues()[0];
-  }
-
-  // Column indexes (0-based) after enforcing header order
-  headers = targetSheet.getRange(1, 1, 1, targetSheet.getLastColumn()).getValues()[0];
-  var firstNameColumnIndex = headers.indexOf("First Name"); // 0
-  var lastNameColumnIndex  = headers.indexOf("Last Name");  // 1
-  var emailColumnIndex     = headers.indexOf("Email");      // 2
-  var uhIDColumnIndex      = headers.indexOf("UH ID");      // 3
-  var paidStatusColIndex   = headers.indexOf("Paid Status");// 4
-  var pointsColumnIndex    = headers.indexOf("Total Points");// 5
-
-  // ---------------------- SOURCE ROW ----------------------
-  var lastRow = sourceSheet.getLastRow();
-  if (lastRow < 2) {
-    Logger.log("No data rows in source sheet.");
+  if (!uhID) {
+    Logger.log('Skipping submission - missing UH ID');
     return;
   }
-  var formData = sourceSheet.getRange(lastRow, 1, 1, sourceSheet.getLastColumn()).getValues()[0];
 
-  // Extract form fields (adjust if your form columns differ)
-  var firstName = formData[1] ? String(formData[1]).trim() : "";
-  var lastName  = formData[2] ? String(formData[2]).trim() : "";
-  var email     = formData[3] ? String(formData[3]).trim() : "";
-  var uhID      = formData[4] ? String(formData[4]).trim() : "";
-
-  // ---------------------- MEMBERSHIP MAP (UHID -> Paid/Unpaid) ----------------------
-  var membershipSheet = spreadsheet.getSheetByName("Membership");
-  var membershipLastRow = membershipSheet.getLastRow();
-  var membershipLastCol = membershipSheet.getLastColumn();
-  var membershipValues = membershipLastRow > 1
-    ? membershipSheet.getRange(2, 1, membershipLastRow - 1, membershipLastCol).getValues()
-    : [];
-
-  var UHID_COL_ABS = 3;   // C
-  var PAYABLE_COL_ABS = 26; // Z
-  var uhidOffset = UHID_COL_ABS - 1;
-  var payableOffset = PAYABLE_COL_ABS - 1;
-
-  var paidMap = {};
-  for (var r = 0; r < membershipValues.length; r++) {
-    var row = membershipValues[r];
-    var memUHID = row[uhidOffset] != null ? String(row[uhidOffset]).trim() : "";
-    var payableRaw = row[payableOffset] != null ? String(row[payableOffset]).trim() : "";
-    if (memUHID) {
-      paidMap[memUHID] = /paid/i.test(payableRaw) ? "Paid" : "Unpaid";
-    }
-  }
-  function getPaidStatusForUHID(id) {
-    var key = id != null ? String(id).trim() : "";
-    return paidMap[key] || "Unpaid";
-  }
-
-  // ---------------------- EVENT COLUMN (create if missing) ----------------------
-  var eventColumnIndex = headers.indexOf(sourceSheetName);
-  if (eventColumnIndex === -1) {
-    var newEventCol = headers.length + 1;
-    targetSheet.getRange(1, newEventCol).setValue(sourceSheetName)
-               .setFontWeight("bold").setBackground("#f1f3f4");
-    headers = targetSheet.getRange(1, 1, 1, targetSheet.getLastColumn()).getValues()[0];
-    eventColumnIndex = headers.indexOf(sourceSheetName);
-  }
-
-  // ---------------------- UPSERT ROW BY UH ID ----------------------
-  var data = targetSheet.getDataRange().getValues();
-  var found = false;
-
-  for (var i = 1; i < data.length; i++) {
-    if (String(data[i][uhIDColumnIndex]).trim() === uhID) {
-      found = true;
-
-      if (firstName) targetSheet.getRange(i + 1, firstNameColumnIndex + 1).setValue(firstName);
-      if (lastName)  targetSheet.getRange(i + 1, lastNameColumnIndex + 1).setValue(lastName);
-
-      // email (append unique)
-      var existingEmails = String(data[i][emailColumnIndex] || "").split(", ").filter(Boolean);
-      if (email && existingEmails.indexOf(email) === -1) {
-        existingEmails.push(email);
-        targetSheet.getRange(i + 1, emailColumnIndex + 1).setValue(existingEmails.join(", "));
-      }
-
-      // event points
-      targetSheet.getRange(i + 1, eventColumnIndex + 1).setValue(pointsForThisEvent)
-                 .setBackground("#b7e1cd");
-
-      // recompute total points (sum from first event column: column after Total Points)
-      var updatedRow = targetSheet.getRange(i + 1, 1, 1, targetSheet.getLastColumn()).getValues()[0];
-      var eventStartIndex = headers.indexOf("Total Points") + 1;
-      var totalPoints = 0;
-      for (var j = eventStartIndex; j < headers.length; j++) {
-        totalPoints += Number(updatedRow[j]) || 0;
-      }
-      targetSheet.getRange(i + 1, pointsColumnIndex + 1).setValue(totalPoints);
-
-      // paid status
-      var paidStatus = getPaidStatusForUHID(uhID);
-      targetSheet.getRange(i + 1, paidStatusColIndex + 1).setValue(paidStatus)
-                 .setBackground(paidStatus === "Paid" ? "#c6efce" : "#ffc7ce");
+  // Get or create target sheet
+  var targetSheet = spreadsheet.getSheetByName(targetSheetName) || spreadsheet.insertSheet(targetSheetName);
+  
+  // Get ALL data at once to minimize reads
+  var targetDataRange = targetSheet.getDataRange();
+  var targetData = targetDataRange.getValues();
+  var targetHeaders = targetData[0] || [];
+  
+  // Ensure headers exist and get indexes
+  var headerIndexes = ensureHeaders(targetSheet, targetHeaders);
+  
+  // Get membership data (cache this if possible)
+  var paidMap = getMembershipPaidMap(spreadsheet);
+  var paidStatus = paidMap[uhID] || "Unpaid";
+  
+  // Ensure event column exists
+  var eventColumnIndex = ensureEventColumn(targetSheet, targetHeaders, sourceSheetName);
+  
+  // Find existing row or create new one
+  var uhIDIndex = headerIndexes.uhID;
+  var existingRowIndex = -1;
+  
+  for (var i = 1; i < targetData.length; i++) {
+    if (String(targetData[i][uhIDIndex]).trim() === uhID) {
+      existingRowIndex = i;
       break;
     }
   }
 
-  if (!found) {
-    var newRow = targetSheet.getLastRow() + 1;
-    var paidForNew = getPaidStatusForUHID(uhID);
-
-    // write base columns including Paid Status and Total Points
-    targetSheet.getRange(newRow, 1, 1, 6).setValues([[
-      firstName, lastName, email, uhID, paidForNew, pointsForThisEvent
-    ]]);
-
-    // set event points cell
-    targetSheet.getRange(newRow, eventColumnIndex + 1).setValue(pointsForThisEvent)
-               .setBackground("#b7e1cd");
-
-    // color paid status cell
-    targetSheet.getRange(newRow, paidStatusColIndex + 1)
-               .setBackground(paidForNew === "Paid" ? "#c6efce" : "#ffc7ce");
+  if (existingRowIndex !== -1) {
+    updateExistingRow(targetSheet, existingRowIndex, headerIndexes, {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      uhID: uhID,
+      points: pointsForThisEvent,
+      paidStatus: paidStatus,
+      eventColumnIndex: eventColumnIndex
+    });
+  } else {
+    createNewRow(targetSheet, headerIndexes, {
+      firstName: firstName,
+      lastName: lastName,
+      email: email,
+      uhID: uhID,
+      points: pointsForThisEvent,
+      paidStatus: paidStatus,
+      eventColumnIndex: eventColumnIndex
+    });
   }
 
-  // Resize: events start at column 7 now (after Total Points)
-  for (var col = 7; col <= targetSheet.getLastColumn(); col++) {
-    targetSheet.setColumnWidth(col, 100);
-  }
-  targetSheet.autoResizeColumn(emailColumnIndex + 1);
-  targetSheet.getDataRange().setHorizontalAlignment("center");
-
-  Logger.log("Form response processed and added to 'Member Overview'.");
-
+  // Formatting (do this once at the end)
+  formatSheet(targetSheet, headerIndexes.email);
   createOrUpdateEventMultipliers();
   createLeaderboard();
   createOrUpdateDashboard();
+  Logger.log("Form response processed successfully for UH ID: " + uhID);
 }
+
+function ensureHeaders(targetSheet, currentHeaders) {
+  var desiredHeaders = ["First Name", "Last Name", "Email", "UH ID", "Paid Status", "Total Points"];
+  var headerIndexes = {};
+  
+  // Create missing headers
+  if (currentHeaders.length === 0 || currentHeaders[0] !== "First Name") {
+    targetSheet.getRange(1, 1, 1, desiredHeaders.length).setValues([desiredHeaders]);
+    currentHeaders = desiredHeaders.concat([]);
+  }
+  
+  // Get indexes
+  headerIndexes.firstName = currentHeaders.indexOf("First Name");
+  headerIndexes.lastName = currentHeaders.indexOf("Last Name");
+  headerIndexes.email = currentHeaders.indexOf("Email");
+  headerIndexes.uhID = currentHeaders.indexOf("UH ID");
+  headerIndexes.paidStatus = currentHeaders.indexOf("Paid Status");
+  headerIndexes.totalPoints = currentHeaders.indexOf("Total Points");
+  
+  // Ensure Paid Status exists after UH ID
+  if (headerIndexes.paidStatus === -1) {
+    var uhIdIndex = headerIndexes.uhID;
+    targetSheet.insertColumnAfter(uhIdIndex + 1);
+    targetSheet.getRange(1, uhIdIndex + 2).setValue("Paid Status")
+               .setFontWeight("bold").setBackground("#f1f3f4");
+    headerIndexes.paidStatus = uhIdIndex + 1;
+  }
+  
+  // Ensure Total Points exists
+  if (headerIndexes.totalPoints === -1) {
+    var newCol = currentHeaders.length + 1;
+    targetSheet.getRange(1, newCol).setValue("Total Points")
+               .setFontWeight("bold").setBackground("#f1f3f4");
+    headerIndexes.totalPoints = newCol - 1;
+  }
+  
+  return headerIndexes;
+}
+
+function getMembershipPaidMap(spreadsheet) {
+  var membershipSheet = spreadsheet.getSheetByName("Membership");
+  if (!membershipSheet) return {};
+  
+  var data = membershipSheet.getDataRange().getValues();
+  var paidMap = {};
+  
+  for (var i = 1; i < data.length; i++) {
+    var uhID = data[i][2] ? String(data[i][2]).trim() : ""; // Column C (3)
+    var payable = data[i][25] ? String(data[i][25]).trim() : ""; // Column Z (26)
+    
+    if (uhID) {
+      paidMap[uhID] = /paid/i.test(payable) ? "Paid" : "Unpaid";
+    }
+  }
+  
+  return paidMap;
+}
+
+function ensureEventColumn(targetSheet, headers, eventName) {
+  var eventIndex = headers.indexOf(eventName);
+  
+  if (eventIndex === -1) {
+    var newColIndex = headers.length + 1;
+    targetSheet.getRange(1, newColIndex).setValue(eventName)
+               .setFontWeight("bold").setBackground("#f1f3f4");
+    return newColIndex - 1; // Return 0-based index
+  }
+  
+  return eventIndex;
+}
+
+function updateExistingRow(targetSheet, rowIndex, headers, data) {
+  var rowNum = rowIndex + 1;
+  
+  // Update basic info if provided
+  if (data.firstName) {
+    targetSheet.getRange(rowNum, headers.firstName + 1).setValue(data.firstName);
+  }
+  if (data.lastName) {
+    targetSheet.getRange(rowNum, headers.lastName + 1).setValue(data.lastName);
+  }
+  
+  // Update email (append unique)
+  var currentEmail = targetSheet.getRange(rowNum, headers.email + 1).getValue();
+  var emails = currentEmail ? String(currentEmail).split(", ").filter(Boolean) : [];
+  if (data.email && emails.indexOf(data.email) === -1) {
+    emails.push(data.email);
+    targetSheet.getRange(rowNum, headers.email + 1).setValue(emails.join(", "));
+  }
+  
+  // Set event points
+  targetSheet.getRange(rowNum, data.eventColumnIndex + 1)
+             .setValue(data.points)
+             .setBackground("#b7e1cd");
+  
+  // Update paid status
+  targetSheet.getRange(rowNum, headers.paidStatus + 1)
+             .setValue(data.paidStatus)
+             .setBackground(data.paidStatus === "Paid" ? "#c6efce" : "#ffc7ce");
+  
+  // Recalculate total points (including membership bonus if paid)
+  recalculateTotalPoints(targetSheet, rowNum, headers, data.paidStatus);
+}
+
+function createNewRow(targetSheet, headers, data) {
+  var newRow = targetSheet.getLastRow() + 1;
+  
+  // Calculate total points (event points + membership bonus if paid)
+  var totalPoints = data.points;
+  if (data.paidStatus === "Paid") {
+    totalPoints += 50; // Add membership bonus
+  }
+  
+  // Create base row data
+  var rowData = new Array(headers.totalPoints + 1).fill("");
+  rowData[headers.firstName] = data.firstName;
+  rowData[headers.lastName] = data.lastName;
+  rowData[headers.email] = data.email;
+  rowData[headers.uhID] = data.uhID;
+  rowData[headers.paidStatus] = data.paidStatus;
+  rowData[headers.totalPoints] = totalPoints; // Includes bonus if paid
+  rowData[data.eventColumnIndex] = data.points; // Event points only
+  
+  // Set the entire row at once
+  targetSheet.getRange(newRow, 1, 1, rowData.length).setValues([rowData]);
+  
+  // Format specific cells
+  targetSheet.getRange(newRow, data.eventColumnIndex + 1).setBackground("#b7e1cd");
+  targetSheet.getRange(newRow, headers.paidStatus + 1)
+             .setBackground(data.paidStatus === "Paid" ? "#c6efce" : "#ffc7ce");
+}
+
+function recalculateTotalPoints(targetSheet, rowNum, headers, paidStatus) {
+  var rowData = targetSheet.getRange(rowNum, 1, 1, targetSheet.getLastColumn()).getValues()[0];
+  var totalPoints = 0;
+  var startIndex = headers.totalPoints + 1; // Columns after Total Points
+  
+  // Add points from all events
+  for (var j = startIndex; j < rowData.length; j++) {
+    totalPoints += Number(rowData[j]) || 0;
+  }
+  
+  // Add 50 bonus points if member is paid
+  if (paidStatus === "Paid") {
+    totalPoints += 50;
+  }
+  
+  targetSheet.getRange(rowNum, headers.totalPoints + 1).setValue(totalPoints);
+}
+
+function formatSheet(targetSheet, emailColumnIndex) {
+  // Resize columns
+  var lastCol = targetSheet.getLastColumn();
+  for (var col = 7; col <= lastCol; col++) {
+    targetSheet.setColumnWidth(col, 100);
+  }
+  
+  targetSheet.autoResizeColumn(emailColumnIndex + 1);
+  targetSheet.getDataRange().setHorizontalAlignment("center");
+}
+
+
+
+
+
+// vv     run func below to sync membership sheet paid status to member overview 
+
+// Sync Membership sheet Paid Status → Member Overview
+function syncMembershipToOverview() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var membership = ss.getSheetByName("Membership");
+  var overview = ss.getSheetByName("Member Overview");
+  if (!membership || !overview) return;
+
+  var memData = membership.getDataRange().getValues();   // Membership data
+  var ovData = overview.getDataRange().getValues();      // Member Overview data
+  var headers = ovData[0];
+  
+  var uhIdIndexOV = headers.indexOf("UH ID");
+  var paidStatusIndexOV = headers.indexOf("Paid Status");
+  var totalPointsIndexOV = headers.indexOf("Total Points");
+
+  if (uhIdIndexOV === -1 || paidStatusIndexOV === -1 || totalPointsIndexOV === -1) {
+    Logger.log("Missing UH ID / Paid Status / Total Points in Member Overview");
+    return;
+  }
+
+  // Build lookup for Overview rows by UH ID
+  var ovMap = {};
+  for (var i = 1; i < ovData.length; i++) {
+    var uh = String(ovData[i][uhIdIndexOV]).trim();
+    if (uh) {
+      ovMap[uh] = i + 1; // store row number (1-based)
+    }
+  }
+
+  // Loop Membership rows
+  for (var j = 1; j < memData.length; j++) {
+    var uhID = String(memData[j][2]).trim();  // UH ID col C (index 2)
+    var payable = String(memData[j][25]).trim(); // Payable col Z (index 25)
+    if (!uhID) continue;
+
+    var newPaid = /paid/i.test(payable) ? "Paid" : "Unpaid";
+    var rowNumOV = ovMap[uhID];
+
+    if (rowNumOV) {
+      // Update Paid Status in Overview
+      var cell = overview.getRange(rowNumOV, paidStatusIndexOV + 1);
+      cell.setValue(newPaid)
+          .setBackground(newPaid === "Paid" ? "#c6efce" : "#ffc7ce");
+
+      // Recalculate total points for that row
+      recalculateTotalPoints(overview, rowNumOV, {
+        totalPoints: totalPointsIndexOV
+      }, newPaid);
+    }
+  }
+
+  Logger.log("Sync completed between Membership → Member Overview");
+}
+
+
+
+
+
+
+
+
